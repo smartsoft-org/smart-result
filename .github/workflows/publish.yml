@@ -1,0 +1,24 @@
+name: Publish
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main # Default release branch
+        paths:
+            - "src/**"
+jobs:
+    publish:
+        name: build, pack & publish
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup dotnet
+              uses: actions/setup-dotnet@v1
+              with:
+                  dotnet-version: 6.0.100
+
+            # Publish
+            - name: Package
+              run: dotnet pack -c Release src/SmartResult.csproj
+            - name: Publish
+              run: dotnet nuget push .\artifacts\*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source "https://nuget.pkg.github.com/smartsoft-org/index.json" --skip-duplicate
